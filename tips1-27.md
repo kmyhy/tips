@@ -311,6 +311,18 @@
 > <span id='i155'>[155. 为什么用 setNavigationBarHidden: 无法显示导航栏？](#q155)</span>
 > 
 > <span id='i156'>[156. 访问https出错：In order to validate a domain name for self signed certificates, you MUST use pinning](#q156)</span>
+> 
+> <span id='i157'>[157. 我的设备数达到了上限，我又急需要增加新的设备怎么办？](#q157)</span>
+> 
+> <span id='i158'>[158. 知道中文字符串对应的 utf8 数值，如何正确输出这段中文？](#q158)</span>
+> 
+> <span id='i159'>[159. 如何禁用 CALayer 的隐式动画效果？](#q159)</span>
+> 
+> <span id='i160'>[160. pod install 警告GCC_PRECOMPILE_PREFIX_HEADER 设置被覆盖](#q160)</span>
+> 
+> <span id='i161'>[161. 在中文输入法下，如何准确判断 textfield 中字数是否超长？](#q161)</span>
+> 
+> <span id="i162'>[162. UIImagePickerController 内存泄漏问题](#q162)</span>
 
 <div style="margin: 1em 0px 16px; padding: 0px 0px 0.3em; color: rgb(133, 195, 155); line-height: 1.225; font-size: 1.75em; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(133, 133, 133);"> iOS 开发问与答（FAQ）</div>
 
@@ -3493,7 +3505,7 @@ done
 ```swift
 -(CGFloat)rollSpeed{
     NSNumber* number = objc_getAssociatedObject(self, @selector(rollSpeed));
-    if(number == nil){
+    if(number != nil){
         return number.doubleValue;
     }
     return 0;
@@ -3695,7 +3707,7 @@ UIImage* resizeImage = [image scaledToScale:0.2];
 将这句代码注释了。不应该直接设置 navigationBar 的 hidden 属性，改用 setNavigationBarHidden 方法隐藏导航栏。
 [回到目录](#i155)
 
-## <span i='q156'>156. 访问https出错：In order to validate a domain name for self signed certificates, you MUST use pinning</span>
+## <span id='q156'>156. 访问https出错：In order to validate a domain name for self signed certificates, you MUST use pinning</span>
 
 设置两个安全设置：
 
@@ -3705,3 +3717,111 @@ securityPolicy.validatesDomainName = NO;
 ```
 [回到目录](#i155)
 
+## <span id='q157'>157.我的设备数达到了上限，我又急需要增加新的设备怎么办？</span>
+对此你可以给苹果的技术客服发邮件要求他们帮助我们删除所有的设备，并且恢复到增加100个测试设备的名额。具体做法是访问https://developer.apple.com/contact/, 单击“Program Benefits”按钮，然后在新出来的提交页面中将需求添上。之后苹果会发邮件告诉你处理结果，你可能需要打电话过去和他们沟通一些细节。在沟通完成之后，苹果就可以立即帮助你把状态修改到“可删除设备来增加测试设备名额”。这样，你就可以选择性的删除一些不需要的设备来释放一些名额了。
+[回到目录](#i157)
+
+## <span id='q158'>158.知道中文字符串对应的 utf8 数值，如何正确输出这段中文？<span>
+
+比如，中文“精品”的 unicode(utf8) 值为“\U7cbe\U54c1”，如何将 \U7cbe\U54c1 正确的中文“精品”输出出来？答案是：NSString => NSData => NSString
+
+```swift
+    NSString *s = @"\\U7cbe\\U54c1";
+    
+    NSData *data=[s dataUsingEncoding:NSUTF8StringEncoding];
+    
+    
+    
+    s = [[NSString alloc] initWithData:data encoding:NSNonLossyASCIIStringEncoding] ;
+    NSLog(@"%@",s);
+```
+ 
+注意斜杠“\”在 NSString 中要用两道斜杠“\\”来进行转义。
+
+[回到目录](#i158)
+
+## <span id='q159'>159. 如何禁用 CALayer 的隐式动画效果？</span>
+
+当对非Root Layer的部分属性进行修改时，默认会自动产生一些动画效果，而这些属性称为Animatable Properties(可动画属性)。但有时候我们不需要这些隐式动画效果，该怎么关闭它呢？
+
+比如当我们修改一个 CALayer 的 frame 时，默认会有一个框架变形的动画（iOS 10.3）。如果我们不需要这个效果，可以将 CATransaction 的 disableActions 属性设置为 YES：
+
+```swift
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+    barMaskLayer.frame = CGRectMake(_leftGap, _topGap, width*_percent, _barHeight);
+    [CATransaction commit];
+```
+
+
+[回到目录](#i159)
+
+## <span id='q160'>160. pod install 警告GCC_PRECOMPILE_PREFIX_HEADER 设置被覆盖</span>
+
+当 pod install 时，出现警告：
+
+```
+[!] The `Client [Debug]` target overrides the `GCC_PRECOMPILE_PREFIX_HEADER` build setting defined in `Pods/Target Support Files/Pods-Client/Pods-Client.debug.xcconfig'. This can lead to problems with the CocoaPods installation
+    - Use the `$(inherited)` flag, or
+    - Remove the build settings from the target.
+```
+意思是主工程 target 中的 GCC_PRECOMPILE_PREFIX_HEADER 设置和 Pods target 中的设置不一样，导致后者会被前者覆盖。解决办法很简单，找到主工程 target build settings 中的 Precompile Prefix Header 一项，点击下拉按钮，选择 other，然后输入 $(inherited) 回车。然后重新 pod install（可能需要关闭 Xcode）。
+
+[回到目录](#i160)
+
+## <span id='q161'>161. 在中文输入法下，如何准确判断 textfield 中字数是否超长？</span>
+
+因为中文输入的情况下，textfield 中输入字母都是暂时的，如果用户选词之后 textfield 中对应的字母还会最终替换成中文。如果你在用户未选词之前计算 textfield 字数是不准确的，因为那不是最终用户想要输入的字符，用户想要输入的字符应该是选定联想词组之后。因此需要在监听方法中进行特殊处理。
+
+首先监听 textfield 的 UIControlEventEditingChanged 方法：
+
+```
+[_textField addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+```
+textFieldChanged: 方法是重点：
+
+```swift
+- (void)textFieldChanged:(UITextField *)textField {
+    NSString *toBeString = textField.text;
+    NSArray *currentar = [UITextInputMode activeInputModes];
+    UITextInputMode *current = [currentar firstObject];
+    
+    if ([current.primaryLanguage isEqualToString:@"zh-Hans"]) { // 简体中文输入，包括简体拼音，健体五笔，简体手写
+        UITextRange *selectedRange = [textField markedTextRange];
+        //获取高亮部分
+        UITextPosition *position = [textField positionFromPosition:selectedRange.start offset:0];
+        // 没有高亮选择的字，则对已输入的文字进行字数统计和是否超长判断
+        if (!position) {
+            if (toBeString.length > charLimited) {
+                textField.text = [toBeString substringToIndex:charLimited];
+                [self alertForCharLimited];// 超长，弹出 alert 提示
+            }
+        }
+        // 有高亮选择的字符串，则暂不对文字进行统计和限制
+    }
+    // 中文输入法以外的直接对其统计限制即可，不考虑其他语种情况
+    else{
+        if (toBeString.length > charLimited) {
+            textField.text = [toBeString substringToIndex:charLimited];
+            [self alertForCharLimited];// 超长，弹出 alert 提示
+        }
+    }
+    NSLog(@"%@",textField.text);
+}
+```
+主要原理是在方法中对中文输入法进行判断，如果当前输入法为中文，而且用户有尚未选词的输入，则暂不去判断字数是否超过限制。
+
+[回到目录](#i161)
+
+<span id='q162'>162. UIImagePickerController 内存泄漏问题</span>
+
+在使用 UIImagePickerController 时，MLeaksFinder 老是报内存泄漏。这是因为在设置 UIImagePickerController 的 delegate 时强引用了 self，导致循环引用，无法释放 UIImagePickerController。
+
+因此，只需要将 delegate 设置为弱引用就好：
+
+```
+__weak __typeof(self)weakSelf=self;
+imagePicker.delegate = weakSelf;
+```
+
+[回到目录](#i162)
