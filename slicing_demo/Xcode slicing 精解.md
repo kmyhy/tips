@@ -52,7 +52,7 @@
 
 打开 Main.storyboard，拖入大小不同的几张 image view，将 image 属性设置为这张气泡图。运行 app，你会看到图片根据图片的 frame 完美地进行了拉伸：
 
-<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/7.png?raw=true" with="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/7.png?raw=true" width="240"/>
 
 这其中除了点了几次按钮之外，我们什么也没做，这也太神奇了吧？
 
@@ -97,7 +97,7 @@ slicing 到底做了些什么？再来看 Xcode 的 slicing 界面。
 2. 划定“样本”区域。既然需要复制，那么必须有复制的“样本”。对应地，“样本”区域也会分成两个，一个是横向复制样本，一个是竖向复制样本，它们分别在作横向复制和竖向复制中作为拷贝的样本。大部分情况下，样本区域只需要保留 1 个像素宽。
 3. 设定样本区域后，“保护区域”就自动划定了。因为一个完美的可拉伸切图中，除了样本区域，就只剩下“保护区域”了（因为“多余”的部分已经在第 1 步中剔除了）。这一步不需要进行任何操作，当上一步做完，它自然就会完成。
 
-总结，slicing 的目的是去除图中的规则部分，只留下不规则部分和 1 像素的样本即可。这样做的原因是规则部分方便复制，而不规则部分不好复制，只有保留下来原样显示了。至于为什么不规则部分为什么不好复制，这就要问 resizableImageWithCapInsets 函数了。因为 resizableImageWithCapInsets 函数只能做简单的二方向复制（也就是只能进行矩形的像素填充），还没有“智能”到能够沿不规则路径进行复制（也就是进行复制图形的像素填充）的程度。
+总结，slicing 的目的是去除图中的规则部分，只留下不规则部分和 1 像素的样本即可。这样做的原因是规则部分方便复制，而不规则部分不好复制，只有保留下来原样显示了。至于不规则部分为什么不好复制，这就要问 resizableImageWithCapInsets 函数了。因为 resizableImageWithCapInsets 函数只能做简单的二方向复制（也就是只能进行矩形的像素填充），还没有“智能”到能够沿不规则路径进行复制（也就是进行复杂图形的像素填充）的程度。
 
 ## slicing 转换成 resizableImageWithCapInsets 函数
 
