@@ -322,7 +322,16 @@
 > 
 > <span id='i161'>[161. 在中文输入法下，如何准确判断 textfield 中字数是否超长？](#q161)</span>
 > 
-> <span id="i162'>[162. UIImagePickerController 内存泄漏问题](#q162)</span>
+> <span id='i162'>[162. UIImagePickerController 内存泄漏问题](#q162)</span>
+> 
+> <span id='i163'>[163. 真机调试报错：dyld: Library not loaded: @rpath/libswiftCore.dylib](#q163)</span>
+>
+> <span id='i164'>[164. 禁止自动锁屏](#q164)</span>
+> 
+> <span id='i165'>[165. 如何手动安装 iOS 模拟器？](#q165)</span>
+> 
+> <span id='i166'>[166. 如何手动触发一个 text field 的文本改变事件？](#q166)</span>
+> 
 
 <div style="margin: 1em 0px 16px; padding: 0px 0px 0.3em; color: rgb(133, 195, 155); line-height: 1.225; font-size: 1.75em; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(133, 133, 133);"> iOS 开发问与答（FAQ）</div>
 
@@ -3813,7 +3822,7 @@ textFieldChanged: 方法是重点：
 
 [回到目录](#i161)
 
-<span id='q162'>162. UIImagePickerController 内存泄漏问题</span>
+## <span id='q162'>162. UIImagePickerController 内存泄漏问题</span>
 
 在使用 UIImagePickerController 时，MLeaksFinder 老是报内存泄漏。这是因为在设置 UIImagePickerController 的 delegate 时强引用了 self，导致循环引用，无法释放 UIImagePickerController。
 
@@ -3823,5 +3832,53 @@ textFieldChanged: 方法是重点：
 __weak __typeof(self)weakSelf=self;
 imagePicker.delegate = weakSelf;
 ```
-
 [回到目录](#i162)
+
+## <span id='q163'>163. 真机调试报错：dyld: Library not loaded: @rpath/libswiftCore.dylib</span>
+模拟器上没问题。这个错误通常可能是以下原因导致的：
+
+1. 证书问题
+
+	请检查 Apple WWDR 证书和开发者证书是否安装正确。
+2. Xcode 版本冲突问题
+
+	如果你安装了两个版本的 Xcode，比如同时安装了 Xcode 8 和 Xcode 9 beta，则很可能在 Xcode 9 beta 上正常，而 Xcode 8 上不正常了。这时请删除以下文件或文件夹：
+	* ~/Library/Developer/Xcode/DerivedData
+	* ~/Library/Caches/com.apple.dt.Xcode
+
+[回到目录](#i163) 
+## <span id='q164'>164. 禁止自动锁屏</span>
+
+在 AppDelegate 中：
+
+```swift
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // 禁止自动锁屏
+	[[UIApplication sharedApplication] setIdleTimerDisabled:YES]; 
+}
+```
+[回到目录](#i164)
+## <span id='q165'>165. 如何手动安装 iOS 模拟器?</span>
+
+Xcode 8 以后的 iOS 模拟器通过 Prefrences 中的 Components/Simulators 进行管理，但经常出现下载中断无法安装的情况，而且速度非常慢。那么可以用迅雷等工具进行下载后再安装吗？答案是肯定的。
+
+1. 用 spotlight 打开控制台应用（console）。
+2. 打开 Xcode 9 的 Prefrences/Components/Simulators，选择你想安装的模拟器版本，点击下载，然后取消。
+3. 在 console 中，搜索 dvt，会看到如下记录：DVTDownloadable: Download Cancelled. Downloadable: https://devimages-cdn.apple.com/downloads/xcode/simulators/com.apple.pkg.iPhoneSimulatorSDK10_3-10.3.1.1495751597.dmg.
+4. 将 url 复制粘贴到 迅雷 工具中进行下载。
+5. 下载完成后，将下载到的文件复制到目录：~/Library/Caches/com.apple.dt.Xcode/Downloads
+6. 回到 Xcode，重新下载模拟器版本，这时会发现会跳过 sdk 下载过程直接开始安装。安装完成新版本的模拟器就会在 Schema 菜单中列出。
+
+[回到目录](#i165)
+
+## <span id='q166'>166. 如何手动触发 text field 的文本改变事件？</span>
+
+因为有时候我们会直接修改 text field 的 text 属性，这样如果用监听 UITextFieldTextDidChangeNotification 通知或者 RAC 的 rac_textSignal 的方法都无法监听到此类改变。我们需要在修改 text 之后手动立即触发一个文字改变事件：
+
+```swift
+self.phoneTextField.text = nil;
+// 通知 RAC，文字已改变，否则 RAC 无法监听 text 的改变
+[self.phoneTextField sendActionsForControlEvents:UIControlEventEditingChanged];
+```
+
+[回到目录](#i166)
