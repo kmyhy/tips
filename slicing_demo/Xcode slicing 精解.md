@@ -10,11 +10,11 @@
 
 打个比方，美工给你这样一张气泡图：
 
-<img src="1.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/1.png?raw=true" width="240"/>
 
 这个图要怎么用？因为聊天气泡是会跟随文字内容的多少变化的，比如这些聊天气泡：
 
-<img src="2.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/2.png?raw=true" width="240"/>
 
 这些聊天气泡的背景图片使用的都是美工给的图片，不过根据聊天内容的多少进行了拉伸处理。由于美工给的气泡图片不是规则图片（四方形），那怎么拉伸就成了难题。比如图片中某些部位可以拉伸，有的部位保持原样。
 
@@ -26,15 +26,15 @@
 
 将这张图片拖到 assets 中。注意 slicing 只支持对处于 Assets 中的图片。打开 Assets，选中这张图片，你会看到右下角有一个 show slicing 按钮：
 
-<img src="3.png" width="160"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/3.png?raw=true" width="160"/>
 
 点击它，图片上出现 start slicing 按钮：
 
-<img src="4.png" width="340"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/4.png?raw=true" width="340"/>
 
 点击这颗按钮，又出现 3 个图标按钮：
 
-<img src="5.png" width="300"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/5.png?raw=true" width="300"/>
 
 这 3 个选项分别表示：左右拉伸、上下左右拉伸、上下拉伸。
 
@@ -44,7 +44,7 @@
 
 选择“上下左右拉伸”，你会看到图片上多了几条虚线，把图分成了 9 个区域：
 
-<img src="6.png" width="300"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/6.png?raw=true" width="300"/>
 
 这几条虚线分别是 3 条竖线和 3 条横线。注意，默认情况下左边 2 条竖线和上边 2 条横线会叠在一起，不注意会看不出来。
 
@@ -52,7 +52,7 @@
 
 打开 Main.storyboard，拖入大小不同的几张 image view，将 image 属性设置为这张气泡图。运行 app，你会看到图片根据图片的 frame 完美地进行了拉伸：
 
-<img src="7.png" with="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/7.png?raw=true" with="240"/>
 
 这其中除了点了几次按钮之外，我们什么也没做，这也太神奇了吧？
 
@@ -60,11 +60,11 @@
 
 slicing 到底做了些什么？再来看 Xcode 的 slicing 界面。
 
-<img src="6.png" width="300"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/6.png?raw=true" width="300"/>
 
 这其中有一些区域被灰色蒙版区域所覆盖。这些区域实际上是会被丢弃的。也就是说美工给的图最终会被 Xcode 切除一部分（灰色部分），变成这个样子：
 
-<img src="8.png" width="480"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/8.png?raw=true" width="480"/>
 
 
 这就是 slicing (切图）一词的来由。我把图放大了一点，注意第一根横线/竖线和第二根横/竖线之间的区域，就是以图中红色标注的点为交叉点的横、竖两根 1 像素的蓝线。这些线属于“样本区域”。而四周的 4 个角的区域是“保护区域”。也就是说，当图片被拉伸时，“保护区域”原样显示，不会被拉伸，而其它“非保护区域”则会进行拉伸，拉伸的方式是用“样本区域”进行复制（复制方式有两种：平铺或拉伸）而来。“样本”区域的定义是，第一根线和第二根线之间的区域。即第一根横线和第二根横线，以及第一根竖线和第二根竖线之间的区域。
@@ -75,16 +75,16 @@ slicing 到底做了些什么？再来看 Xcode 的 slicing 界面。
 
 通过上面的了解，我们可以看到，实际上 Xcode 默认的切图操作并不完美。其实保护区域中还是部分区域可以切除的，因为它们还有一部分区域是属于规则图形（矩形），很容易通过“复制”的方式克隆出来。比如下图：
 
-<img src="9.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/9.png?raw=true" width="240"/>
 
 第一根横线上的红框区域和第三根横线下面的红框区域，这些都是竖向拉伸时的保护区域，但它们其实都是规则图形（矩形），可以通过“复制”方式克隆出来，所以完全可以被切除。
 所以我们可以调整三根横线的位置，将这两部分区域从“保护区域”中剔除：
 
-<img src="10.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/10.png?raw=true" width="240"/>
 
 这样实际保留下的部分应该是：
 
-<img src="11.png" width="200"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/11.png?raw=true" width="200"/>
 
 除了不好复制的“保护区域”，我们只留下了 1 个像素的“样本区域”了。
 
@@ -103,7 +103,7 @@ slicing 到底做了些什么？再来看 Xcode 的 slicing 界面。
 
 其实 slicing 也能够很方便地转换成 resizableImageWithCapInsets 函数拉伸。在 slicing 过程中，要达到完美切图，有时候必须对横竖虚线进行像素级移动，对于鼠标操作来说，进行像素移动并不方便，这时候我们可以利用属性面板中的 slicing 区域来进行：
 
-<img src="12.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/12.png?raw=true" width="240"/>
 
 其中：
 
@@ -127,7 +127,7 @@ _imageView.image = image;
 ```
 Build & run，你会看到效果如下：
 
-<img src="13.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/13.png?raw=true" width="240"/>
 
 这是什么鬼？注意看图片文件的名字了吗，代码中使用的是 Combined Shape3，但实际上这个文件在项目导航器中显示为 Combined Shape3@3x.png，这说明这是一设备相关的图形文件，而 resizableImageWithCapInsets 函数是和设备无关的。
 
@@ -137,7 +137,7 @@ Build & run，你会看到效果如下：
 
 运行 App，你会看到：
 
-<img src="14.png" width="240"/>
+<img src="https://github.com/kmyhy/tips/blob/master/slicing_demo/14.png?raw=true" width="240"/>
 
 完美！
 
