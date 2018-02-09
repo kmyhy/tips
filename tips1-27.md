@@ -332,6 +332,11 @@
 > 
 > <span id='i166'>[166. 如何手动触发一个 text field 的文本改变事件？](#q166)</span>
 > 
+> <span id='i167'>[167. 如何在 present 一个控制器时显示半透明遮罩？](#q167)</span>
+> 
+> <span id='i168'>[168. 为什么关键帧动画不起作用?](#q168)</span>
+> 
+> <span id='i169'>[169. 如何修改 TextField 的光标颜色？](#q169)</span>
 
 <div style="margin: 1em 0px 16px; padding: 0px 0px 0.3em; color: rgb(133, 195, 155); line-height: 1.225; font-size: 1.75em; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(133, 133, 133);"> iOS 开发问与答（FAQ）</div>
 
@@ -504,8 +509,17 @@ let indexPaths = tableView.indexPathsForVisibleRows()
 ```
 [返回目录](#i16)
 ## <span id="q17">17.如何将 swift 代码导入到 O-C？</span>
-在O-C 文件中使用 import "项目名称-Swift.h" 语句。其中“项目名称”是你的项目名称，例如：#import "ProductName-Swift.h"。
-这个文件是 Xcode 自动生成的，它把项目中所有的 Swift 类的接口文件都定义到这个文件中了。注意这些类必须是用 @objc 声明或者继承了 NSObject 的 swift 类。
+
+1. 首先，在工程的 Build Settings 中把 defines module 设为 YES。
+2. 然后，把 product module name 中的值（这个值很可能是你的项目名称）复制下来。
+3. 最后，在 O-C 文件中使用 import "项目名称-Swift.h" 语句。其中“项目名称”是你复制的 product module name 的值，例如：#import "ProductName-Swift.h"。
+
+> 这个文件是 Xcode 自动生成的，它把项目中所有的 Swift 类的接口文件都定义到这个文件中了。注意这些类必须是用 @objc 声明或者继承了 NSObject 的 swift 类。
+
+要在 Swift 中使用 O-C 代码，需要在项目的桥接头文件中，import 要使用的 O-C 类头文件。
+
+> 在Swift 工程中，在你新建一个O-C文件的时候自动帮你创建这个桥接头文件。
+
 [返回目录](#i17)
 ## <span id="q18">18.iOS 中有类似于 Java 中的 Synchroized() 的语句吗？</span>
 在多线程操作中，经常要保护某一语句块让它同步执行，iOS 中也有类似 Java 的 Synchronized() 语句。要向同步执行语句，将要同步执行的语句包裹在 objc_sync_enter()/objc_sync_exit() 中即可：
@@ -3882,3 +3896,41 @@ self.phoneTextField.text = nil;
 ```
 
 [回到目录](#i166)
+
+## <span id='q167'>167. 如何在 present 一个控制器时显示半透明遮罩？</span>
+```swift
+PlaylistVC* vc =(PlaylistVC*)[self controllerById:@"PlaylistVC" storyboard:@"play"];
+
+    // 呈现时显示半透明遮罩
+    self.definesPresentationContext = YES; //self is presenting view controller
+    vc.view.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:.4];
+    vc.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    
+    [self presentViewController:vc animated:YES completion:nil];
+```
+
+[回到目录](#i167)
+
+## <span id='q168'>168. 为什么关键帧动画不起作用?</span>
+为什么在关键帧动画中，用 addKeyframeWithRelativeStartTime 添加的帧不会以动画方式执行，只会显示最后一帧的结果（中间的帧全部跳过）。
+
+注意参数中的 startTime 和 duration 是否设对。比如下面的代码：
+
+```
+[UIView animateKeyframesWithDuration:duration delay:0 options:UIViewKeyframeAnimationOptionCalculationModeLinear animations:^{
+	……
+	[UIView addKeyframeWithRelativeStartTime:1/3 relativeDuration:2/3 animations:^{
+        snapshot.layer.transform = [self yRotationAngle:0];
+      }];
+  ……
+}];
+```
+
+代码中传递的 startTime 和 duration 使用了整数除法，在 O-C 中整数除法当结果是小数时会自动取整，1/3 和 2/3 取整后结果都是 0，因此所有帧都是从 0% 处开始，执行 0% 的时长，所以动画帧不会以动画方式执行。解决办法很简单，只需将它们修改为 1.0/3 和 2.0/3 即可。
+ 
+[回到目录](#i168)
+## <span id='q169'>169. 如何修改 TextField 的光标颜色？</span>
+用代码设置 TextField 的 tintColor，而不要用 IB 设置。
+
+[回到目录](#i169)
+
