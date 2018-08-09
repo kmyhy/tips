@@ -337,6 +337,25 @@
 > <span id='i168'>[168. 为什么关键帧动画不起作用?](#q168)</span>
 > 
 > <span id='i169'>[169. 如何修改 TextField 的光标颜色？](#q169)</span>
+> 
+> <span id='i170'>[170. 为什么替换启动图后不生效？](#q170)</span>
+> 
+> <span id='i171'>[171. 如何查看 mobileprovision 文件中注册的设备数？](#q171)</span>
+> 
+> <span id='i172'>[172. 为什么自定义 UIView 的 touchesEnded 方法不触发？](#q172)</span>
+> 
+> <span id='i173'>[173. modalPresentationStyle 设置为 UIModalPresentationOverCurrentContext 会有什么效果？](#q173)</span>
+> 
+> <span id='i174'>[174. 为什么设置边框阴影时没有效果？](#q174)</span>
+> 
+> <span id='i175'>[175. 事件从子视图穿透到父视图的问题](#q175)</span>
+> 
+> <span id='i176'>[176. 为什么在高德地图中自定义标注无效？](#q176)</span>
+> 
+> <span id='i177'>[177. 自定义导航栏 titleView 时frame 计算不正确问题](#q177)
+> 
+> <span id='i178'>[178. 如何在 IB 中设置 table view 的 header view？](#q178)
+> 
 
 <div style="margin: 1em 0px 16px; padding: 0px 0px 0.3em; color: rgb(133, 195, 155); line-height: 1.225; font-size: 1.75em; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(133, 133, 133);"> iOS 开发问与答（FAQ）</div>
 
@@ -3933,4 +3952,130 @@ PlaylistVC* vc =(PlaylistVC*)[self controllerById:@"PlaylistVC" storyboard:@"pla
 用代码设置 TextField 的 tintColor，而不要用 IB 设置。
 
 [回到目录](#i169)
+
+## <span id='q170'>170. 为什么替换启动图后不生效？</span>
+在 assets 中替换完启动图之后，无论 clean 还是重新安装 app，启动图都还是原来的不会变。要解决这个问题，需要将图片名称修改一下，比如由原来的 LaunchScreen 修改为 LaunchScreen-1。然后在 LaunchScreen.storyboard 中将 image view 的图片名称也换成 LaunchScreen-1。
+
+[回到目录](#i170)
+
+## <span id='q171'>171. 如何查看 mobileprovision 文件中注册的设备数？</span>
+
+mobileprovision 文件是加密的 plist 文件。在终端中输入命令：
+
+	security cms -D -i 20180105_hoc_profies.mobileprovision
+
+即可打印出文件内容，其中 key 为 ProvisionedDevices 中包含的是一个字符串数组，数组中列出了所有注册设备的 UUID，将这个数组（即<array>...</array>中的内容）拷贝出来用文本编辑器统计行数即可。
+
+[回到目录](#i171)
+## <span id='q172'>172. 为什么自定义 UIView 的 touchesEnded 方法不触发？</span>
+
+一个自定义 UIView 重写了 touchesEnded: 方法，在大部分 UIViewController 中都能响应触摸，但在一个 UIViewController 中使用时就是无法触发 touchesEnded: 方法。后经检查发现，这个 UIViewController 的 view 中添加了一个 UITapGestureRecognizer 手势识别器，把 touchesEnded: 方法给拦截了。只需将这个手势识别器删除，自定义 UIView 就能正确触发 touhesEnded: 方法了。
+
+解决办法，是在自定义 UIView 中改用 touchesBegan: 方法来响应触摸。
+
+[回到目录](#i172)
+
+## <span id='q173'> 173. modalPresentationStyle 设置为 UIModalPresentationOverCurrentContext 会有什么效果？</span>
+
+当我们需要 present 一个带半透明遮罩效果的 view controller 时，往往会用：
+
+```swift
+// 呈现时显示半透明遮罩
+    self.definesPresentationContext = YES; //self is presenting view controller
+    vc.view.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:.4];
+    vc.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    [self.navigationController setNavigationBarHidden:YES];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+```
+
+这样做会导致原来的 view controller 的 view 不会从视图树中移除（如果使用默认的 UIModalPresentationFullScreen 的话原来的 view 会从当前视图树中移除），而是作为背景显示在要呈现的 view controller 的 View 下方。这会带来两个附加效果：
+
+1. 如果原来的 view controller 显示有导航栏，那么导航栏会在 present 之后依然显示。
+2. 原来的 view  controller 的 viewWillDisappear/viewDidDisappear 方法不会被调用。
+
+[回到目录](#i173)
+## <span id='q174'>174. 为什么设置边框阴影时没有效果？</span>
+有时候我们会用下面的代码设置一个 view 的边框阴影：
+
+```
+        _containerView.layer.shadowColor = [UIColor blackColor].CGColor;
+        _containerView.layer.shadowRadius = 10;
+        _containerView.layer.shadowOpacity = 0.5;
+        _containerView.layer.shadowOffset = CGSizeZero;
+```
+但却没有效果。这时请检查你是否将 masksToBounds 属性设置为 YES：
+
+	_containerView.layer.masksToBounds = YES;
+	
+如果有，请将它设置 NO 或者删除此句。
+[回到目录](#i174)
+
+## <span id='q175'>175. 事件从子视图穿透到父视图的问题</span>
+有一次在一个 view controller 中，在根 view 上添加了一个 tap 手势识别器，用于实现“任意空白处点击解散当前 controller”的功能。但是莫名发现这会导致根视图前面的 collectionview 上的触摸事件穿透问题。即用户点击 collection view 时，不会触发 didSelectItemAtIndexPath 方法，而是直接被根视图的 tap 手势识别器所处理。
+尝试用以下方法解决：
+
+```    
+    UIControl* ctrl = [[UIControl alloc]initWithFrame:self.view.frame];
+    ctrl.backgroundColor = [UIColor colorWithHex:0xf0f0f0];
+    [ctrl addTarget:self action:@selector(rootViewTapped:) forControlEvents:UIControlEventTouchUpInside];
+    self.view = ctrl;
+```
+
+即将根视图 UIView 偷偷替换成一个 UIControl，并且用 UIControl 来处理对应的触摸事件。
+[回到目录](#i175)
+## <span id='q176'>176. 为什么在高德地图中自定义标注无效？</span>
+现象：往 mapview 中添加自定义标注后，标注不显示，同时添加自定义标注不会触发 viewForAnnotation: 委托方法。比如，你往地图中 add 了两个自定义标注，1 个标准标注，这个方法只会触发 1 次而不是 3 次。
+自定义标注时，不要从 MAAnnotation 继承，也不要从 MAShape 继承（AMap3DMap 5.7），而要从 MAPointAnnotation 继承，同时实现 coordinate 属性（MAAnnotation 协议中定义）。
+[回到目录](#i176)
+
+## <span id='q177'>177. 自定义导航栏 titleView 时frame 计算不正确问题</span>
+
+一个自定义 view，添加到普通的 UIView 中使用时正常，当添加到导航栏中作为 titleView 时，框架计算不正确。具体表现为它会根据自定义 view 中的subview 的实际内容修改其 frame。
+
+比如其中有一个 label 和一个 imageview ，label 的实际内容为 32 x 17.2（即 text 的 size 为 32 x 17.2），那么不管这个 view 不管在初始化时 frame 被设置为多少，UIKit 都会把它的 size 修改为 32 x 17.2。但奇怪的是，UIKit 不会将 imageview 的 size 计算进去，从而导致 imageview 超出到框架以外（这也许是一个 Bug!）。
+
+解决办法：
+
+1. 在自定义 view 中添加一个实例变量 CGRect _aFrame，用于保存实例化时初始的 frame:
+
+	```
+	-(instancetype)initWithFrame:(CGRect)frame{
+    _aFrame = frame;
+    ...
+	} 
+	```
+ 
+2. 覆盖 layoutSubviews 方法，判断 frame 有没有被 UIKit 修改，如果修改，说明自定义 view 是被用到了 titleView 上，此时将 frame 扩大，将 imageview 也包含到 frame 中进去：
+
+	```
+	if(_aFrame.size.width != self.frame.size.width){
+			// self.frame 被 UIKit 修改!!!
+        CGRect rect = self.frame;
+        rect.size.width = rect.size.width + 14;
+        [super setFrame:rect];
+    }
+	```
+
+[回到目录](#i177)
+
+## <span id='q178'>178. 如何在 IB 中设置 table view 的 header view？</span>
+
+1. 注意，此操作只能在 UIViewController 中进行，无法在 UITableViewController 中进行。
+2. 拖入一个 UIView，然后在 document outline中，将它拖到 First Responder 下面，和 controller 的根 View 平级；这将使 UIView 不再是根 view 的 subview，成为一个独立的对象，同时移除 IB 自动添加的布局约束。
+3. 在属性面板中将它的 Size 修改为 Freedom(这一步很关键，如果是 Inferred 则下一步无法进行)。因为 table view 要求 header view 的大小必须事先确定，否则无法为 header view 设置 table view 的 contentOffset。
+4. 将这个 view 拖到 UITableView 下一级，完成。
+
+[回到目录](#i178)
+
+
+
+
+
+
+
+
+
+
+
 
